@@ -59,4 +59,55 @@ describe("searchWeb", () => {
     );
     await expect(searchWeb("x", controller.signal)).rejects.toThrow("Search was aborted");
   });
+
+  it("dedupes a URL returned by both the direct answer and related topics", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          AbstractText: "DuckDuckGo is a search engine.",
+          AbstractURL: "https://duckduckgo.com/",
+          Heading: "DuckDuckGo",
+          RelatedTopics: [{ Text: "DuckDuckGo - privacy", FirstURL: "https://DUCKDUCKGO.COM/" }],
+        }),
+      }),
+    );
+    const res = await searchWeb("duckduckgo");
+    expect(res.results).toHaveLength(1); // 大小写变体被归一后只留 direct answer 那条
+  });
+
+  it("dedupes a URL shared by a topic group and its nested topics", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          RelatedTopics: [
+            { Text: "Group - entry", FirstURL: "https://g.com/a" },
+            { Topics: [{ Text: "Nested - entry", FirstURL: "https://g.com/a" }] },
+          ],
+        }),
+      }),
+    );
+    const res = await searchWeb("q");
+    expect(res.results).toHaveLength(1);
+  });
+
+  it("keeps a direct answer that has no URL alongside topic results", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          AbstractText: "Answer without a URL.",
+          Heading: "NoUrl",
+          RelatedTopics: [{ Text: "Topic - entry", FirstURL: "https://t.com" }],
+        }),
+      }),
+    );
+    const res = await searchWeb("q");
+    expect(res.results).toHaveLength(2);
+    expect(res.results[0].url).toBe("");
+  });
 });
