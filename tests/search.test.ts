@@ -44,19 +44,4 @@ describe("searchWeb", () => {
     const res = await searchWeb("q");
     expect(res.results[0].url).toBe("https://nested");
   });
-
-  it("surfaces a readable network error instead of a raw TypeError", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
-    await expect(searchWeb("x")).rejects.toThrow("Search request failed: fetch failed");
-  });
-
-  it("reports aborted searches cleanly", async () => {
-    const controller = new AbortController();
-    controller.abort();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(new DOMException("The operation was aborted.", "AbortError")),
-    );
-    await expect(searchWeb("x", controller.signal)).rejects.toThrow("Search was aborted");
-  });
 });

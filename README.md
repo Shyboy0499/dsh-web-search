@@ -39,12 +39,7 @@ Search the web and get readable results.
 
 Returns `{ query, results: [{ title, url, snippet }] }`.
 
-`limit` (optional) caps how many results are returned. It is clamped to the
-range **1–10** so the agent can't request an unbounded result list; defaults to
-returning everything the endpoint provides (usually a handful).
-
-Network/abort failures surface as readable messages rather than raw
-`TypeError`/`AbortError`.
+`limit` (optional) caps how many results are rendered; defaults to 8.
 
 ## Development
 
