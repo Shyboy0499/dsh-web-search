@@ -29,7 +29,16 @@ export async function searchWeb(
   url.searchParams.set("no_redirect", "1");
   url.searchParams.set("no_html", "1");
 
-  const res = await fetch(url, { signal });
+  let res: Response;
+  try {
+    res = await fetch(url, { signal });
+  } catch (error) {
+    // Surface a readable message for DNS/network failures or aborts instead of a
+    // raw TypeError/AbortError bubbling up to the agent.
+    if (signal?.aborted) throw new Error("Search was aborted.", { cause: error });
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`Search request failed: ${reason}`, { cause: error });
+  }
   if (!res.ok) {
     throw new Error(`Search request failed with status ${res.status}`);
   }
