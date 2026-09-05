@@ -76,5 +76,22 @@ export async function searchWeb(
     }
   }
 
-  return { query, results };
+  return { query, results: dedupeByUrl(results) };
+}
+
+/** Drop later results that point at the same URL as an earlier one. */
+export function dedupeByUrl(results: SearchResult[]): SearchResult[] {
+  const seen = new Set<string>();
+  const out: SearchResult[] = [];
+  for (const result of results) {
+    const key = result.url.trim().toLowerCase();
+    if (!key) {
+      out.push(result);
+      continue;
+    }
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(result);
+  }
+  return out;
 }
