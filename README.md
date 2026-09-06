@@ -15,6 +15,7 @@ there's nothing to configure.
 | Tool         | What it does                                                        |
 | ------------ | ------------------------------------------------------------------- |
 | `web_search` | Query the web and return ranked results with title, URL and snippet |
+| `fetch_page` | Fetch a URL and return readable text (title + body)                    |
 
 ## Installation
 
@@ -45,6 +46,18 @@ returning everything the endpoint provides (usually a handful).
 
 Network/abort failures surface as readable messages rather than raw
 `TypeError`/`AbortError`.
+
+### `fetch_page`
+
+Fetch a URL and get readable text back (title + body), via a keyless reader
+endpoint. Best used on a result URL returned by `web_search`.
+
+```json
+{ "url": "https://example.com/article", "maxChars": 8000 }
+```
+
+Returns `{ url, title, content }`. `maxChars` caps the returned body (default
+12000, clamped to a hard 80000 ceiling).
 
 ## Development
 
